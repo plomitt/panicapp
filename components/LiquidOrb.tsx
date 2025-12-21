@@ -17,33 +17,45 @@ interface LiquidOrbProps {
   color: string;
   stepIndex: number;
   totalSteps: number;
+  isFinished?: boolean; // NEW: Triggers the morph
 }
 
-export function LiquidOrb({ color, stepIndex, totalSteps }: LiquidOrbProps) {
+export function LiquidOrb({ color, stepIndex, totalSteps, isFinished = false }: LiquidOrbProps) {
   const { width } = useWindowDimensions();
   const theme = useColorScheme();
   const isDark = theme === 'dark';
 
   // Base size of the orb (85% of screen width)
   const BASE_SIZE = width * 0.85;
+  // Target size for the checkmark background (60px)
+  const TARGET_SIZE = 60;
 
   const animatedColor = useSharedValue(color);
   const focusProgress = useSharedValue(0);
   const breath = useSharedValue(1);
+  const finishProgress = useSharedValue(0); // 0 = Active, 1 = Finished
 
   useEffect(() => {
     animatedColor.value = withTiming(color, { duration: 800 });
   }, [color]);
 
   useEffect(() => {
-    // Step 0 -> 0 (Open/Big)
-    // Step 4 -> 1 (Focused/Small)
-    const progress = stepIndex / (totalSteps - 1);
-    focusProgress.value = withSpring(progress, { damping: 20, stiffness: 90 });
-  }, [stepIndex]);
+    // If finished, we ignore step progress
+    if (!isFinished) {
+      const progress = stepIndex / (totalSteps - 1);
+      focusProgress.value = withSpring(progress, { damping: 20, stiffness: 90 });
+    }
+  }, [stepIndex, isFinished]);
 
   useEffect(() => {
-    // Continuous Breathing
+    // Animate the Morph state
+    finishProgress.value = withTiming(isFinished ? 1 : 0, { 
+      duration: 800, 
+      easing: Easing.inOut(Easing.cubic) 
+    });
+  }, [isFinished]);
+
+  useEffect(() => {
     breath.value = withRepeat(
       withSequence(
         withTiming(1.05, { duration: 4000, easing: Easing.inOut(Easing.ease) }),
@@ -56,18 +68,15 @@ export function LiquidOrb({ color, stepIndex, totalSteps }: LiquidOrbProps) {
 
   return (
     <View style={[styles.container, { width: BASE_SIZE, height: BASE_SIZE }]}>
-      {/* 
-        LAYER 0: The "Halo" (Outer, blurred, very transparent)
-        LAYER 1: The "Body" (Middle, semi-transparent)
-        LAYER 2: The "Core" (Inner, solid, drives the color)
-      */}
       {[0, 1, 2].map((layerIndex) => (
         <LiquidLayer
           key={layerIndex}
           layerIndex={layerIndex}
           baseSize={BASE_SIZE}
+          targetSize={TARGET_SIZE}
           color={animatedColor}
           focusProgress={focusProgress}
+          finishProgress={finishProgress}
           breath={breath}
           isDark={isDark}
         />
@@ -76,57 +85,77 @@ export function LiquidOrb({ color, stepIndex, totalSteps }: LiquidOrbProps) {
   );
 }
 
-function LiquidLayer({ layerIndex, baseSize, color, focusProgress, breath, isDark }: any) {
-  // CONFIGURATION
-  // Layer 0 (Outer): 100% size, Low Opacity
-  // Layer 1 (Mid):   75% size,  Mid Opacity
-  // Layer 2 (Core):  50% size,  High Opacity
-  const sizeRatio = [1.0, 0.75, 0.5][layerIndex]; 
+function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, finishProgress, breath, isDark }: any) {
+  // Layer Configuration
+  const initialRatio = [1.0, 0.75, 0.5][layerIndex]; 
   
   const animatedStyle = useAnimatedStyle(() => {
-    // Shrink logic: Inner core shrinks less than outer halo to maintain visibility
-    const shrinkFactor = interpolate(
+    // 1. Calculate Standard Active Size
+    // Inner core (layer 2) shrinks less than outer layers during steps
+    const stepShrink = interpolate(
         focusProgress.value, 
         [0, 1], 
         [1, 0.6 + (layerIndex * 0.1)]
     );
     
-    // Parallax Breath: Layers move at slightly different rates to feel "fluid"
-    const breathScale = interpolate(
+    // 2. Calculate Finished Size
+    // All layers want to become TARGET_SIZE (60px)
+    // We calculate the scale needed to turn "Base * Ratio" into "Target"
+    const currentBaseSize = baseSize * initialRatio;
+    const targetScale = targetSize / currentBaseSize;
+
+    // 3. Morph Logic: Interpolate between Active Scale and Finished Scale
+    // Active Scale = stepShrink * breath
+    // Finished Scale = targetScale (no breath)
+    
+    const activeScale = stepShrink * interpolate(
         breath.value, 
         [0.95, 1.05], 
         [0.95 + (layerIndex * 0.01), 1.05 - (layerIndex * 0.01)]
     );
 
+    const finalScale = interpolate(finishProgress.value, [0, 1], [activeScale, targetScale]);
+
     return {
-      width: baseSize * sizeRatio,
-      height: baseSize * sizeRatio,
-      borderRadius: (baseSize * sizeRatio) / 2,
+      width: currentBaseSize,
+      height: currentBaseSize,
+      borderRadius: currentBaseSize / 2,
       backgroundColor: color.value,
-      transform: [{ scale: shrinkFactor * breathScale }],
-      // Layering Opacity to create "Density"
-      // Outer = 0.3, Mid = 0.5, Inner = 0.9
-      opacity: [0.2, 0.4, 0.9][layerIndex],
+      transform: [{ scale: finalScale }],
+      // Opacity Logic:
+      // Active: [0.2, 0.4, 0.9]
+      // Finished: Outer layers fade to 0, Inner Core (Layer 2) becomes 1 (Solid)
+      opacity: interpolate(
+        finishProgress.value,
+        [0, 1],
+        [
+           [0.2, 0.4, 0.9][layerIndex], 
+           layerIndex === 2 ? 1 : 0 // Layer 2 stays, others vanish
+        ]
+      ),
     };
   });
 
   return (
     <Animated.View style={[styles.layerPosition, animatedStyle]}>
-      {/* Blur only on outer layers to create the "Atmosphere" */}
+      {/* Blur removed on finish (so it matches the solid checkmark background) */}
       {layerIndex < 2 && (
-        <BlurView
-          intensity={layerIndex === 0 ? 40 : 20}
-          tint={isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
+        <Animated.View style={{ opacity: interpolate(finishProgress.value, [0, 1], [1, 0]) }}>
+             <BlurView
+              intensity={layerIndex === 0 ? 40 : 20}
+              tint={isDark ? 'dark' : 'light'}
+              style={[StyleSheet.absoluteFill, { borderRadius: 9999 }]}
+            />
+        </Animated.View>
       )}
 
-      {/* White Border / Reflection for Glass look */}
-      <View style={[
+      {/* Border fades out on finish */}
+      <Animated.View style={[
         styles.borderOverlay, 
         { 
           borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)',
-          borderWidth: layerIndex === 2 ? 0 : 1, // No border on core, only on glass shells
+          borderWidth: layerIndex === 2 ? 0 : 1,
+          opacity: interpolate(finishProgress.value, [0, 1], [1, 0]) 
         }
       ]} />
     </Animated.View>
@@ -134,24 +163,17 @@ function LiquidLayer({ layerIndex, baseSize, color, focusProgress, breath, isDar
 }
 
 const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  container: { justifyContent: 'center', alignItems: 'center' },
   layerPosition: {
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden', // Keeps blur inside circle
-    // Shadows provide the "Pop" off the white background
+    // We remove overflow hidden so shadows work, but blur needs radius matching
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 5,
   },
-  borderOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 9999,
-  },
+  borderOverlay: { ...StyleSheet.absoluteFillObject, borderRadius: 9999 },
 });
