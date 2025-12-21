@@ -5,17 +5,38 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// tintColor constants
+const tintColorLight = '#0a7ea4'; // Calm Teal-Blue
+const tintColorDark = '#3395FF';
 
 export const Colors = {
   light: {
     text: '#11181C',
-    background: '#fff',
+    background: '#fff', // Apple HIG Standard Light Background
     tint: tintColorLight,
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+
+    // GROUNDING COLORS (Light Mode - Soft/Pastel)
+    // Goal: Low saturation to prevent over-stimulation.
+    
+    // Step 5 (Sight): "Sky Blue" - Openness, lowers BP.
+    step5: '#E1F5FE',
+    
+    // Step 4 (Touch): "Sage Green" - Nature, physical connection.
+    step4: '#E8F5E9',
+    
+    // Step 3 (Sound): "Misty Lavender" - Quiet, spiritual/calm.
+    step3: '#F3E5F5',
+    
+    // Step 2 (Smell): "Rose Water" - Scent association (floral), compassion.
+    step2: '#FCE4EC',
+    
+    // Step 1 (Taste): "Peach Creme" - Flavor association (sweet), warmth.
+    step1: '#FFF3E0',
+    
+    stepText: '#11181C', // High contrast for readability
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +45,26 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+
+    // GROUNDING COLORS (Dark Mode - Deep/Muted)
+    // Goal: "Elevated" dark colors. Not neon, but rich.
+    
+    // Step 5 (Sight): Deep Slate Blue
+    step5: '#102A43',
+    
+    // Step 4 (Touch): Deep Forest/Moss
+    step4: '#133322', 
+    
+    // Step 3 (Sound): Deep Plum/Indigo
+    step3: '#2D1B4E', 
+    
+    // Step 2 (Smell): Muted Mauve/Rosewood
+    step2: '#4A1C30', 
+    
+    // Step 1 (Taste): Burnt Sienna/Clay
+    step1: '#5D2E18',
+    
+    stepText: '#ECEDEE', // Light text on dark backgrounds
   },
 };
 
