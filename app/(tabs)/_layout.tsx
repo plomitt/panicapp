@@ -1,35 +1,142 @@
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+// Import the IconSymbolName type to ensure type safety
+import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export default function TabLayout() {
+// 1. Define which icon goes with which route name here
+const TAB_ICONS: Record<string, IconSymbolName> = {
+  index: 'house.fill',
+  explore: 'paperplane.fill',
+};
+
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  
+  const activeColor = Colors[colorScheme ?? 'light'].tint;
+  const inactiveColor = Colors[colorScheme ?? 'light'].icon;
+  
+  const bubbleColor = isDark 
+    ? 'rgba(255, 255, 255, 0.15)' 
+    : 'rgba(0, 0, 0, 0.08)';
 
   return (
+    <View style={styles.tabBarContainer}>
+      <View style={styles.glassPill}>
+        <BlurView
+          intensity={80}
+          tint={isDark ? 'dark' : 'light'}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={[
+          StyleSheet.absoluteFill, 
+          { 
+            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)', 
+            borderWidth: 1.5, 
+            borderRadius: 35 
+          }
+        ]} />
+
+        <View style={styles.tabItemsContainer}>
+          {state.routes.map((route, index) => {
+            const isFocused = state.index === index;
+            
+            // 2. Safely get the icon name based on the route
+            const iconName = TAB_ICONS[route.name] || 'questionmark'; // Fallback
+
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, route.params);
+              }
+            };
+
+            return (
+              <Pressable
+                key={route.key}
+                onPress={onPress}
+                style={styles.tabItem}
+              >
+                {isFocused && (
+                  <View style={[styles.activeBubble, { backgroundColor: bubbleColor }]} />
+                )}
+
+                <IconSymbol
+                  size={28}
+                  name={iconName} // Fixed: Passing string directly
+                  color={isFocused ? activeColor : inactiveColor}
+                />
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+export default function TabLayout() {
+  return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+        options={{ title: 'Home' }}
       />
       <Tabs.Screen
         name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
+        options={{ title: 'Explore' }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  glassPill: {
+    borderRadius: 35,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    elevation: 8,
+  },
+  tabItemsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 6,
+    gap: 6,
+  },
+  tabItem: {
+    width: 90,
+    height: 55,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 28,
+  },
+  activeBubble: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 28,
+  },
+});
