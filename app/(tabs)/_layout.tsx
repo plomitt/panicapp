@@ -4,79 +4,107 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-// Import the IconSymbolName type to ensure type safety
+// 1. Make sure these are imported from Reanimated
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  withTiming
+} from 'react-native-reanimated';
+
 import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-// 1. Define which icon goes with which route name here
 const TAB_ICONS: Record<string, IconSymbolName> = {
   index: 'house.fill',
-  settings: 'gear', // Change explore to settings, use gear icon
+  settings: 'gear',
 };
+
+function TabItem({ onPress, isFocused, iconName, activeColor, inactiveColor, bubbleColor }: any) {
+  
+  const animatedBubbleStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: withTiming(isFocused ? bubbleColor : 'transparent', { duration: 300 })
+    };
+  });
+
+  return (
+    <Pressable onPress={onPress} style={styles.tabItem}>
+      <Animated.View style={[styles.activeBubble, animatedBubbleStyle]} />
+      {/* IconSymbol now handles its own color animation internally */}
+      <IconSymbol
+        size={28}
+        name={iconName}
+        color={isFocused ? activeColor : inactiveColor}
+      />
+    </Pressable>
+  );
+}
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = Colors[colorScheme ?? 'light'];
   
-  const activeColor = theme.tint;
-  const inactiveColor = theme.icon;
   const borderColor = theme.glassBorder;
   const bubbleColor = theme.tabHighlight;
+
+  // Animate the pill border color
+  const animatedPillStyle = useAnimatedStyle(() => ({
+    borderColor: withTiming(borderColor, { duration: 300 })
+  }));
+
+  // 2. Derive the opacity values for the cross-fade
+  // When isDark changes, these transition between 0 and 1
+  const darkBlurOpacity = useDerivedValue(() => {
+    return withTiming(isDark ? 1 : 0, { duration: 300 });
+  }, [isDark]);
+
+  const lightBlurOpacity = useDerivedValue(() => {
+    return withTiming(isDark ? 0 : 1, { duration: 300 });
+  }, [isDark]);
 
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.glassPill}>
-        <BlurView
-          intensity={80}
-          tint={isDark ? 'dark' : 'light'}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={[
+        
+        {/* BLUR LAYER 1: LIGHT (Visible in Light Mode) */}
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: lightBlurOpacity }]}>
+          <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
+        </Animated.View>
+
+        {/* BLUR LAYER 2: DARK (Visible in Dark Mode) */}
+        <Animated.View style={[StyleSheet.absoluteFill, { opacity: darkBlurOpacity }]}>
+           <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+        </Animated.View>
+
+        {/* BORDER LAYER */}
+        <Animated.View style={[
           StyleSheet.absoluteFill, 
-          { 
-            borderColor: borderColor, 
-            borderWidth: 1.5, 
-            borderRadius: 35 
-          }
+          { borderWidth: 1.5, borderRadius: 35 },
+          animatedPillStyle
         ]} />
 
         <View style={styles.tabItemsContainer}>
           {state.routes.map((route, index) => {
             const isFocused = state.index === index;
+            const iconName = TAB_ICONS[route.name] || 'questionmark';
             
-            // 2. Safely get the icon name based on the route
-            const iconName = TAB_ICONS[route.name] || 'questionmark'; // Fallback
-
             const onPress = () => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name, route.params);
-              }
+              const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+              if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
             };
 
             return (
-              <Pressable
+              <TabItem 
                 key={route.key}
                 onPress={onPress}
-                style={styles.tabItem}
-              >
-                {isFocused && (
-                  <View style={[styles.activeBubble, { backgroundColor: bubbleColor }]} />
-                )}
-
-                <IconSymbol
-                  size={28}
-                  name={iconName} // Fixed: Passing string directly
-                  color={isFocused ? activeColor : inactiveColor}
-                />
-              </Pressable>
+                isFocused={isFocused}
+                iconName={iconName}
+                activeColor={theme.tint}
+                inactiveColor={theme.icon}
+                bubbleColor={bubbleColor}
+              />
             );
           })}
         </View>
@@ -91,14 +119,8 @@ export default function TabLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{ title: 'Home' }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{ title: 'Settings' }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
     </Tabs>
   );
 }

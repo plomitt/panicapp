@@ -1,10 +1,14 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight } from 'expo-symbols';
 import { OpaqueColorValue, StyleProp, TextStyle } from 'react-native';
+import Animated, {
+  useAnimatedProps,
+  withTiming
+} from 'react-native-reanimated';
 
-// Add your mappings here.
-// Key = iOS SF Symbol Name
-// Value = Android/Web Material Icon Name
+// 1. Create an Animated version of the Icon component
+const AnimatedMaterialIcons = Animated.createAnimatedComponent(MaterialIcons);
+
 const MAPPING = {
   // Default mappings
   'house.fill': 'home',
@@ -31,10 +35,6 @@ const MAPPING = {
 
 export type IconSymbolName = keyof typeof MAPPING;
 
-/**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- */
 export function IconSymbol({
   name,
   size = 24,
@@ -47,12 +47,22 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
+  
+  // 2. Animate the color prop
+  // We cast to string because OpaqueColorValue is rare in this context (usually hex strings)
+  const animatedProps = useAnimatedProps(() => {
+    return {
+      color: withTiming(color as string, { duration: 300 }),
+    };
+  });
+
   return (
-    <MaterialIcons 
-      color={color} 
-      size={size} 
+    <AnimatedMaterialIcons 
       name={MAPPING[name]} 
-      style={style} 
+      size={size} 
+      style={style}
+      // Pass the animated prop instead of the static one
+      animatedProps={animatedProps} 
     />
   );
 }

@@ -1,4 +1,5 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { StyleSheet, TextProps } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -17,16 +18,23 @@ export function ThemedText({
 }: ThemedTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
 
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      color: withTiming(color, { duration: 300 }),
+    };
+  });
+
   return (
-    <Text
+    <Animated.Text
       style={[
-        { color },
+        { color }, // Initial static color for first render
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
         style,
+        animatedStyle, // Overrides with animated value
       ]}
       {...rest}
     />

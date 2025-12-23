@@ -3,6 +3,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { BlurView } from 'expo-blur';
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 interface GlassViewProps {
   children: React.ReactNode;
@@ -16,6 +17,12 @@ export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
   
   const borderColor = useThemeColor({}, 'glassBorder');
 
+  const animatedBorderStyle = useAnimatedStyle(() => {
+    return {
+      borderColor: withTiming(borderColor, { duration: 300 }),
+    };
+  });
+
   return (
     <View style={[styles.glassContainer, style]}>
       <BlurView 
@@ -24,12 +31,12 @@ export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
         style={StyleSheet.absoluteFill} 
         pointerEvents="none" 
       />
-      <View 
-        style={[styles.borderLayer, { borderColor }]} 
+      
+      <Animated.View 
+        style={[styles.borderLayer, animatedBorderStyle]} 
         pointerEvents="none"
       />
       
-      {/* Children (Buttons) stay interactive */}
       {children}
     </View>
   );
