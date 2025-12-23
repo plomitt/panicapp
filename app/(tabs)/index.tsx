@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react'; // Added useMemo
 import { GestureResponderEvent, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -16,23 +16,18 @@ import { GroundIcon } from '@/components/icons/GroundIcon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { i18n } from '@/constants/Translations'; // Import i18n
+import { usePreferences } from '@/context/PreferencesContext'; // Import Context
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-interface GroundingStep {
-  count: number;
-  sense: string;
-  instruction: string;
-  colorKey: keyof typeof Colors.light;
-}
-
-const STEPS: GroundingStep[] = [
-  { count: 5, sense: 'SIGHT', instruction: 'Look around. Tap for 5 things you can SEE.', colorKey: 'step5' },
-  { count: 4, sense: 'TOUCH', instruction: 'Find 4 things you can physically FEEL.', colorKey: 'step4' },
-  { count: 3, sense: 'SOUND', instruction: 'Listen carefully. Tap for 3 things you can HEAR.', colorKey: 'step3' },
-  { count: 2, sense: 'SMELL', instruction: 'Identify 2 things you can SMELL.', colorKey: 'step2' },
-  { count: 1, sense: 'TASTE', instruction: 'Focus on 1 thing you can TASTE.', colorKey: 'step1' },
-];
+// 1. Static Configuration (Data that doesn't change with language)
+const STEP_CONFIG = [
+  { count: 5, key: 'sight', colorKey: 'step5' },
+  { count: 4, key: 'touch', colorKey: 'step4' },
+  { count: 3, key: 'sound', colorKey: 'step3' },
+  { count: 2, key: 'smell', colorKey: 'step2' },
+  { count: 1, key: 'taste', colorKey: 'step1' },
+] as const;
 
 interface RippleItem {
   id: number;
@@ -41,6 +36,18 @@ interface RippleItem {
 }
 
 export default function HomeScreen() {
+  // 2. Consume Context to trigger re-render on language change
+  const { language } = usePreferences();
+
+  // 3. Generate STEPS dynamically based on current language
+  const STEPS = useMemo(() => {
+    return STEP_CONFIG.map((step) => ({
+      ...step,
+      sense: i18n.t(`grounding.steps.${step.key}.sense`),
+      instruction: i18n.t(`grounding.steps.${step.key}.instruction`),
+    }));
+  }, [language]); // Re-run when language changes
+
   const [status, setStatus] = useState<'IDLE' | 'ACTIVE' | 'COMPLETE'>('IDLE');
   const [stepIndex, setStepIndex] = useState(0);
   const [itemsLeft, setItemsLeft] = useState(5);
@@ -55,7 +62,7 @@ export default function HomeScreen() {
   const idleOpacity = useSharedValue(1);
   const activeOpacity = useSharedValue(0);
   const completeOpacity = useSharedValue(0);
-  const orbOpacity = useSharedValue(0); // Orb starts invisible
+  const orbOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (status === 'IDLE') {
@@ -100,8 +107,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       
-      {/* --- LAYER 0: THE ORB (Persistent) --- */}
-      {/* It morphs into the checkmark background when finished */}
+      {/* LAYER 0: THE ORB */}
       <Animated.View style={[styles.absoluteFillCenter, { opacity: orbOpacity }]}>
         <LiquidOrb 
           color={stepColor} 
@@ -111,36 +117,36 @@ export default function HomeScreen() {
         />
       </Animated.View>
 
-      {/* --- LAYER 1: RIPPLES --- */}
+      {/* LAYER 1: RIPPLES */}
       <View style={styles.absoluteFill} pointerEvents="none">
         {ripples.map((r) => (
           <TapRipple key={r.id} x={r.x} y={r.y} color={stepColor} onComplete={() => removeRipple(r.id)} />
         ))}
       </View>
 
-      {/* --- LAYER 2: IDLE SCREEN --- */}
+      {/* LAYER 2: IDLE SCREEN (Translated) */}
       <Animated.View 
         style={[styles.absoluteFill, { opacity: idleOpacity }]} 
         pointerEvents={status === 'IDLE' ? 'auto' : 'none'}
       >
         <SafeAreaView style={styles.menuContainer}>
           <GroundIcon size={80} color={tintColor} style={{ marginBottom: 20 }} />
-          <ThemedText type="title">Grounding</ThemedText>
-          <ThemedText type="subtitle" style={styles.subtitle}>5-4-3-2-1 Technique</ThemedText>
+          <ThemedText type="title">{i18n.t('grounding.title')}</ThemedText>
+          <ThemedText type="subtitle" style={styles.subtitle}>{i18n.t('grounding.subtitle')}</ThemedText>
           <GlassView style={styles.glassCard}>
             <ThemedText style={styles.description}>
-              Use this exercise to anchor yourself in the present moment.
+              {i18n.t('grounding.description')}
             </ThemedText>
           </GlassView>
           <TouchableOpacity style={[styles.button, { backgroundColor: tintColor }]} onPress={() => {
              setStatus('ACTIVE'); setStepIndex(0); setItemsLeft(5);
           }}>
-            <ThemedText style={[styles.buttonText, { color: textColor }]}>Start Exercise</ThemedText>
+            <ThemedText style={[styles.buttonText, { color: textColor }]}>{i18n.t('grounding.start')}</ThemedText>
           </TouchableOpacity>
         </SafeAreaView>
       </Animated.View>
 
-      {/* --- LAYER 3: ACTIVE PROCESS UI --- */}
+      {/* LAYER 3: ACTIVE PROCESS UI (Translated via STEPS) */}
       <Animated.View 
         style={[styles.absoluteFill, { opacity: activeOpacity }]}
         pointerEvents={status === 'ACTIVE' ? 'auto' : 'none'}
@@ -157,7 +163,7 @@ export default function HomeScreen() {
               <View style={styles.lowerSection}>
                 <GlassView style={styles.instructionGlass}>
                   <ThemedText type="title" style={styles.instruction}>{currentStep.instruction}</ThemedText>
-                  <ThemedText style={{ marginTop: 10, opacity: 0.5 }}>(Tap anywhere)</ThemedText>
+                  <ThemedText style={{ marginTop: 10, opacity: 0.5 }}>{i18n.t('grounding.tapAnywhere')}</ThemedText>
                 </GlassView>
               </View>
             </View>
@@ -172,36 +178,27 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* --- LAYER 4: COMPLETE SCREEN --- */}
+      {/* LAYER 4: COMPLETE SCREEN (Translated) */}
       <Animated.View 
         style={[styles.absoluteFill, { opacity: completeOpacity }]}
         pointerEvents={status === 'COMPLETE' ? 'auto' : 'none'}
       >
         <SafeAreaView style={styles.menuContainer}>
-          {/* CONTAINER FOR ICON + BACKGROUND CIRCLE */}
           <View style={{ width: 80, height: 80, justifyContent: 'center', alignItems: 'center' }}>
-            
-            {/* 1. The Background Circle */}
             <View style={{
-              position: 'absolute',
-              width: 60, 
-              height: 60,
-              borderRadius: 30,
-              backgroundColor: textColor, // This fills the checkmark hole
+              position: 'absolute', width: 60, height: 60, borderRadius: 30, backgroundColor: textColor,
             }} />
-
-            {/* 2. The Icon */}
             <IconSymbol name="checkmark.circle.fill" size={80} color={tintColor} />
           </View>
 
-          <ThemedText type="title" style={{marginTop: 20}}>Well Done.</ThemedText>
+          <ThemedText type="title" style={{marginTop: 20}}>{i18n.t('grounding.wellDone')}</ThemedText>
           <GlassView style={styles.glassCard}>
             <ThemedText style={styles.description}>
-              Take a deep breath. You have grounded yourself in the present.
+              {i18n.t('grounding.finishDescription')}
             </ThemedText>
           </GlassView>
           <TouchableOpacity style={[styles.button, { backgroundColor: tintColor }]} onPress={() => setStatus('IDLE')}>
-            <ThemedText style={[styles.buttonText, { color: textColor }]}>Finish</ThemedText>
+            <ThemedText style={[styles.buttonText, { color: textColor }]}>{i18n.t('grounding.finishButton')}</ThemedText>
           </TouchableOpacity>
         </SafeAreaView>
       </Animated.View>
