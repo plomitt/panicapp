@@ -12,7 +12,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 // 1. Define which icon goes with which route name here
 const TAB_ICONS: Record<string, IconSymbolName> = {
   index: 'house.fill',
-  explore: 'paperplane.fill',
+  settings: 'gear', // Change explore to settings, use gear icon
 };
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -96,8 +96,8 @@ export default function TabLayout() {
         options={{ title: 'Home' }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{ title: 'Explore' }}
+        name="settings"
+        options={{ title: 'Settings' }}
       />
     </Tabs>
   );

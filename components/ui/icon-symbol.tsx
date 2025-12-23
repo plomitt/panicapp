@@ -20,6 +20,13 @@ const MAPPING = {
   'nose.fill': 'filter-vintage',
   'mouth.fill': 'restaurant',
   'checkmark.circle.fill': 'check-circle',
+
+  'gear': 'settings',
+  'iphone': 'smartphone',
+  'sun.max.fill': 'wb-sunny',
+  'moon.fill': 'nightlight-round',
+  'globe': 'language',
+  'checkmark': 'check',
 } as const;
 
 export type IconSymbolName = keyof typeof MAPPING;

@@ -1,5 +1,5 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeColor } from '@/hooks/use-theme-color'; // Import hook
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { BlurView } from 'expo-blur';
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
@@ -14,7 +14,6 @@ export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
   const theme = useColorScheme();
   const isDark = theme === 'dark';
   
-  // Use the centralized color
   const borderColor = useThemeColor({}, 'glassBorder');
 
   return (
@@ -23,11 +22,14 @@ export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
         intensity={intensity} 
         tint={isDark ? 'dark' : 'light'} 
         style={StyleSheet.absoluteFill} 
+        pointerEvents="none" 
       />
-      <View style={[
-        styles.borderLayer, 
-        { borderColor } // <--- Simplified
-      ]} />
+      <View 
+        style={[styles.borderLayer, { borderColor }]} 
+        pointerEvents="none"
+      />
+      
+      {/* Children (Buttons) stay interactive */}
       {children}
     </View>
   );

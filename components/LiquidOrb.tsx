@@ -10,10 +10,9 @@ import Animated, {
   withRepeat,
   withSequence,
   withSpring,
-  withTiming
+  withTiming,
 } from 'react-native-reanimated';
 
-// We need an Animated version of BlurView to animate its opacity seamlessly
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 interface LiquidOrbProps {
@@ -87,7 +86,10 @@ export function LiquidOrb({ color, stepIndex, totalSteps, isFinished = false }: 
 function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, finishProgress, breath, isDark }: any) {
   const initialRatio = [1.0, 0.75, 0.5][layerIndex]; 
   
-  // 1. Main Geometry & Color Animation
+  // Static dimensions to keep layout stable
+  const layerSize = baseSize * initialRatio;
+  const layerRadius = layerSize / 2;
+
   const animatedStyle = useAnimatedStyle(() => {
     const stepShrink = interpolate(
         focusProgress.value, 
@@ -107,9 +109,6 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
     const finalScale = interpolate(finishProgress.value, [0, 1], [activeScale, targetScale]);
 
     return {
-      width: currentBaseSize,
-      height: currentBaseSize,
-      borderRadius: currentBaseSize / 2,
       backgroundColor: color.value,
       transform: [{ scale: finalScale }],
       opacity: interpolate(
@@ -123,15 +122,12 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
     };
   });
 
-  // 2. Blur Opacity Animation (Moved to useAnimatedStyle)
   const blurStyle = useAnimatedStyle(() => {
     return {
       opacity: interpolate(finishProgress.value, [0, 1], [1, 0]),
-      borderRadius: 9999, // Ensure blur respects circle
     };
   });
 
-  // 3. Border Animation (Moved to useAnimatedStyle)
   const borderStyle = useAnimatedStyle(() => {
     return {
       opacity: interpolate(finishProgress.value, [0, 1], [1, 0]),
@@ -139,32 +135,43 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
   });
 
   return (
-    <Animated.View style={[styles.layerPosition, animatedStyle]}>
-      
-      {/* Blur Layer */}
+    <Animated.View 
+      style={[
+        styles.layerPosition, 
+        { width: layerSize, height: layerSize, borderRadius: layerRadius },
+        animatedStyle
+      ]}
+    >
       {layerIndex < 2 && (
         <AnimatedBlurView
           intensity={layerIndex === 0 ? 40 : 20}
           tint={isDark ? 'dark' : 'light'}
-          style={[StyleSheet.absoluteFill, blurStyle]} // Using the animated style
+          style={[
+            StyleSheet.absoluteFill, 
+            { borderRadius: layerRadius, overflow: 'hidden' }, // <--- THE FIX
+            blurStyle
+          ]}
         />
       )}
 
-      {/* Border Layer */}
       <Animated.View style={[
         styles.borderOverlay, 
         { 
           borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)',
           borderWidth: layerIndex === 2 ? 0 : 1,
+          borderRadius: layerRadius, 
         },
-        borderStyle // Using the animated style
+        borderStyle
       ]} />
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { justifyContent: 'center', alignItems: 'center' },
+  container: { 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
   layerPosition: {
     position: 'absolute',
     justifyContent: 'center',
@@ -175,5 +182,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 5,
   },
-  borderOverlay: { ...StyleSheet.absoluteFillObject, borderRadius: 9999 },
+  borderOverlay: { 
+    ...StyleSheet.absoluteFillObject,
+  },
 });
