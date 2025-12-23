@@ -18,13 +18,12 @@ const TAB_ICONS: Record<string, IconSymbolName> = {
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const theme = Colors[colorScheme ?? 'light'];
   
-  const activeColor = Colors[colorScheme ?? 'light'].tint;
-  const inactiveColor = Colors[colorScheme ?? 'light'].icon;
-  
-  const bubbleColor = isDark 
-    ? 'rgba(255, 255, 255, 0.15)' 
-    : 'rgba(0, 0, 0, 0.08)';
+  const activeColor = theme.tint;
+  const inactiveColor = theme.icon;
+  const borderColor = theme.glassBorder;
+  const bubbleColor = theme.tabHighlight;
 
   return (
     <View style={styles.tabBarContainer}>
@@ -37,7 +36,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         <View style={[
           StyleSheet.absoluteFill, 
           { 
-            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.4)', 
+            borderColor: borderColor, 
             borderWidth: 1.5, 
             borderRadius: 35 
           }

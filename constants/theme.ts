@@ -18,25 +18,17 @@ export const Colors = {
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
 
-    // GROUNDING COLORS (Light Mode - Soft/Pastel)
-    // Goal: Low saturation to prevent over-stimulation.
-    
-    // Step 5 (Sight): "Sky Blue" - Openness, lowers BP.
-    step5: '#E1F5FE',
-    
-    // Step 4 (Touch): "Sage Green" - Nature, physical connection.
-    step4: '#E8F5E9',
-    
-    // Step 3 (Sound): "Misty Lavender" - Quiet, spiritual/calm.
-    step3: '#F3E5F5',
-    
-    // Step 2 (Smell): "Rose Water" - Scent association (floral), compassion.
-    step2: '#FCE4EC',
-    
-    // Step 1 (Taste): "Peach Creme" - Flavor association (sweet), warmth.
-    step1: '#FFF3E0',
+    // NEW VIBRANT COLORS
+    step5: '#0099FF', // Vivid Blue
+    step4: '#00C853', // Vivid Green
+    step3: '#FF9100', // Vivid Orange
+    step2: '#D500F9', // Vivid Purple
+    step1: '#FF3D00', // Vivid Red
     
     stepText: '#11181C', // High contrast for readability
+
+    glassBorder: 'rgba(0, 0, 0, 0.1)',
+    tabHighlight: 'rgba(0, 0, 0, 0.08)',
   },
   dark: {
     text: '#ECEDEE',
@@ -65,6 +57,9 @@ export const Colors = {
     step1: '#5D2E18',
     
     stepText: '#ECEDEE', // Light text on dark backgrounds
+
+    glassBorder: 'rgba(255, 255, 255, 0.15)',
+    tabHighlight: 'rgba(255, 255, 255, 0.15)',
   },
 };
 

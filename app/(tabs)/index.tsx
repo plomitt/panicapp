@@ -178,9 +178,19 @@ export default function HomeScreen() {
         pointerEvents={status === 'COMPLETE' ? 'auto' : 'none'}
       >
         <SafeAreaView style={styles.menuContainer}>
-          {/* We use an empty View size 80x80 to hold the space where the Orb morphed to */}
+          {/* CONTAINER FOR ICON + BACKGROUND CIRCLE */}
           <View style={{ width: 80, height: 80, justifyContent: 'center', alignItems: 'center' }}>
-            {/* The Checkmark Icon fades in ON TOP of the morphed Orb */}
+            
+            {/* 1. The Background Circle */}
+            <View style={{
+              position: 'absolute',
+              width: 60, 
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: textColor, // This fills the checkmark hole
+            }} />
+
+            {/* 2. The Icon */}
             <IconSymbol name="checkmark.circle.fill" size={80} color={tintColor} />
           </View>
 

@@ -1,4 +1,5 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColor } from '@/hooks/use-theme-color'; // Import hook
 import { BlurView } from 'expo-blur';
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
@@ -12,6 +13,9 @@ interface GlassViewProps {
 export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
   const theme = useColorScheme();
   const isDark = theme === 'dark';
+  
+  // Use the centralized color
+  const borderColor = useThemeColor({}, 'glassBorder');
 
   return (
     <View style={[styles.glassContainer, style]}>
@@ -22,7 +26,7 @@ export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
       />
       <View style={[
         styles.borderLayer, 
-        { borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.6)' }
+        { borderColor } // <--- Simplified
       ]} />
       {children}
     </View>
@@ -33,14 +37,12 @@ const styles = StyleSheet.create({
   glassContainer: {
     borderRadius: 25,
     overflow: 'hidden',
-    // Subtle shadow for depth (iOS)
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    // Android elevation
     elevation: 5,
-    backgroundColor: 'transparent', // Let blur do the work
+    backgroundColor: 'transparent',
   },
   borderLayer: {
     ...StyleSheet.absoluteFillObject,
