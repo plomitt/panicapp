@@ -41,15 +41,15 @@ export function LiquidOrb({ color, stepIndex, totalSteps, isFinished = false }: 
 
   useEffect(() => {
     if (!isFinished) {
-      const progress = stepIndex / (totalSteps - 1);
+      const progress = stepIndex / totalSteps;
       focusProgress.value = withSpring(progress, { damping: 20, stiffness: 90 });
     }
   }, [stepIndex, isFinished]);
 
   useEffect(() => {
-    finishProgress.value = withTiming(isFinished ? 1 : 0, { 
-      duration: 800, 
-      easing: Easing.inOut(Easing.cubic) 
+    finishProgress.value = withTiming(isFinished ? 1 : 0, {
+      duration: 800,
+      easing: Easing.inOut(Easing.cubic)
     });
   }, [isFinished]);
 
@@ -84,26 +84,26 @@ export function LiquidOrb({ color, stepIndex, totalSteps, isFinished = false }: 
 }
 
 function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, finishProgress, breath, isDark }: any) {
-  const initialRatio = [1.0, 0.75, 0.5][layerIndex]; 
-  
+  const initialRatio = [1.0, 0.75, 0.5][layerIndex];
+
   // Static dimensions to keep layout stable
   const layerSize = baseSize * initialRatio;
   const layerRadius = layerSize / 2;
 
   const animatedStyle = useAnimatedStyle(() => {
-    const stepShrink = interpolate(
-        focusProgress.value, 
-        [0, 1], 
-        [1, 0.6 + (layerIndex * 0.1)]
-    );
-    
     const currentBaseSize = baseSize * initialRatio;
     const targetScale = targetSize / currentBaseSize;
 
+    const stepShrink = interpolate(
+      focusProgress.value,
+      [0, 1],
+      [1, targetScale]
+    );
+
     const activeScale = stepShrink * interpolate(
-        breath.value, 
-        [0.95, 1.05], 
-        [0.95 + (layerIndex * 0.01), 1.05 - (layerIndex * 0.01)]
+      breath.value,
+      [0.95, 1.05],
+      [0.95 + (layerIndex * 0.01), 1.05 - (layerIndex * 0.01)]
     );
 
     const finalScale = interpolate(finishProgress.value, [0, 1], [activeScale, targetScale]);
@@ -115,8 +115,8 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
         finishProgress.value,
         [0, 1],
         [
-           [0.2, 0.4, 0.9][layerIndex], 
-           layerIndex === 2 ? 1 : 0 
+          [0.2, 0.4, 0.9][layerIndex],
+          layerIndex === 2 ? 1 : 0
         ]
       ),
     };
@@ -135,9 +135,9 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
   });
 
   return (
-    <Animated.View 
+    <Animated.View
       style={[
-        styles.layerPosition, 
+        styles.layerPosition,
         { width: layerSize, height: layerSize, borderRadius: layerRadius },
         animatedStyle
       ]}
@@ -147,7 +147,7 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
           intensity={layerIndex === 0 ? 40 : 20}
           tint={isDark ? 'dark' : 'light'}
           style={[
-            StyleSheet.absoluteFill, 
+            StyleSheet.absoluteFill,
             { borderRadius: layerRadius, overflow: 'hidden' }, // <--- THE FIX
             blurStyle
           ]}
@@ -155,11 +155,11 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
       )}
 
       <Animated.View style={[
-        styles.borderOverlay, 
-        { 
+        styles.borderOverlay,
+        {
           borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)',
           borderWidth: layerIndex === 2 ? 0 : 1,
-          borderRadius: layerRadius, 
+          borderRadius: layerRadius,
         },
         borderStyle
       ]} />
@@ -168,8 +168,8 @@ function LiquidLayer({ layerIndex, baseSize, targetSize, color, focusProgress, f
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    justifyContent: 'center', 
+  container: {
+    justifyContent: 'center',
     alignItems: 'center',
   },
   layerPosition: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 5,
   },
-  borderOverlay: { 
+  borderOverlay: {
     ...StyleSheet.absoluteFillObject,
   },
 });

@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     bigNumber: { fontSize: 140, lineHeight: 140, fontWeight: 'bold', textAlign: 'center', width: '100%' },
     instructionGlass: { padding: 25, marginHorizontal: 25, width: 'auto', maxWidth: '90%', alignItems: 'center', alignSelf: 'center' },
     instruction: { textAlign: 'center', fontSize: 24, lineHeight: 32 },
-    footer: { marginBottom: 90, height: 50, justifyContent: 'center' },
+    footer: { marginBottom: 90, height: 50, justifyContent: 'center', paddingBottom: 40 },
     dotsContainer: { flexDirection: 'row', gap: 8 },
     dot: { width: 10, height: 10, borderRadius: 5 },
 });
