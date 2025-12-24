@@ -16,9 +16,8 @@ import { GroundIcon } from '@/components/icons/GroundIcon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { i18n } from '@/constants/Translations'; // Import i18n
-import { usePreferences } from '@/context/PreferencesContext'; // Import Context
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslation } from '@/hooks/use-translation';
 
 // 1. Static Configuration (Data that doesn't change with language)
 const STEP_CONFIG = [
@@ -36,15 +35,15 @@ interface RippleItem {
 }
 
 export default function HomeScreen() {
-  const { language } = usePreferences();
+  const { t, language } = useTranslation();
 
   const STEPS = useMemo(() => {
     return STEP_CONFIG.map((step) => ({
       ...step,
-      sense: i18n.t(`grounding.steps.${step.key}.sense`),
-      instruction: i18n.t(`grounding.steps.${step.key}.instruction`),
+      sense: t(`grounding.steps.${step.key}.sense`),
+      instruction: t(`grounding.steps.${step.key}.instruction`),
     }));
-  }, [language]);
+  }, [language, t]);
 
   const [status, setStatus] = useState<'IDLE' | 'ACTIVE' | 'COMPLETE'>('IDLE');
   const [stepIndex, setStepIndex] = useState(0);
@@ -72,10 +71,10 @@ export default function HomeScreen() {
       idleOpacity.value = withTiming(0, { duration: 500 });
       activeOpacity.value = withTiming(1, { duration: 500 });
       completeOpacity.value = withTiming(0, { duration: 500 });
-      orbOpacity.value = withTiming(1, { duration: 800 }); 
+      orbOpacity.value = withTiming(1, { duration: 800 });
     } else if (status === 'COMPLETE') {
       activeOpacity.value = withTiming(0, { duration: 500 });
-      completeOpacity.value = withDelay(300, withTiming(1, { duration: 800 })); 
+      completeOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));
     }
   }, [status]);
 
@@ -104,13 +103,13 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      
+
       {/* LAYER 0: THE ORB */}
       <Animated.View style={[styles.absoluteFillCenter, { opacity: orbOpacity }]}>
-        <LiquidOrb 
-          color={stepColor} 
-          stepIndex={stepIndex} 
-          totalSteps={STEPS.length} 
+        <LiquidOrb
+          color={stepColor}
+          stepIndex={stepIndex}
+          totalSteps={STEPS.length}
           isFinished={status === 'COMPLETE'}
         />
       </Animated.View>
@@ -123,29 +122,29 @@ export default function HomeScreen() {
       </View>
 
       {/* LAYER 2: IDLE SCREEN (Translated) */}
-      <Animated.View 
-        style={[styles.absoluteFill, { opacity: idleOpacity }]} 
+      <Animated.View
+        style={[styles.absoluteFill, { opacity: idleOpacity }]}
         pointerEvents={status === 'IDLE' ? 'auto' : 'none'}
       >
         <SafeAreaView style={styles.menuContainer}>
           <GroundIcon size={80} color={tintColor} style={{ marginBottom: 20 }} />
-          <ThemedText type="title">{i18n.t('grounding.title')}</ThemedText>
-          <ThemedText type="subtitle" style={styles.subtitle}>{i18n.t('grounding.subtitle')}</ThemedText>
+          <ThemedText type="title">{t('grounding.title')}</ThemedText>
+          <ThemedText type="subtitle" style={styles.subtitle}>{t('grounding.subtitle')}</ThemedText>
           <GlassView style={styles.glassCard}>
             <ThemedText style={styles.description}>
-              {i18n.t('grounding.description')}
+              {t('grounding.description')}
             </ThemedText>
           </GlassView>
           <TouchableOpacity style={[styles.button, { backgroundColor: tintColor }]} onPress={() => {
-             setStatus('ACTIVE'); setStepIndex(0); setItemsLeft(5);
+            setStatus('ACTIVE'); setStepIndex(0); setItemsLeft(5);
           }}>
-            <ThemedText style={[styles.buttonText, { color: textColor }]}>{i18n.t('grounding.start')}</ThemedText>
+            <ThemedText style={[styles.buttonText, { color: textColor }]}>{t('grounding.start')}</ThemedText>
           </TouchableOpacity>
         </SafeAreaView>
       </Animated.View>
 
       {/* LAYER 3: ACTIVE PROCESS UI (Translated via STEPS) */}
-      <Animated.View 
+      <Animated.View
         style={[styles.absoluteFill, { opacity: activeOpacity }]}
         pointerEvents={status === 'ACTIVE' ? 'auto' : 'none'}
       >
@@ -161,23 +160,23 @@ export default function HomeScreen() {
               <View style={styles.lowerSection}>
                 <GlassView style={styles.instructionGlass}>
                   <ThemedText type="title" style={styles.instruction}>{currentStep.instruction}</ThemedText>
-                  <ThemedText style={{ marginTop: 10, opacity: 0.5 }}>{i18n.t('grounding.tapAnywhere')}</ThemedText>
+                  <ThemedText style={{ marginTop: 10, opacity: 0.5 }}>{t('grounding.tapAnywhere')}</ThemedText>
                 </GlassView>
               </View>
             </View>
             <View style={styles.footer}>
-               <View style={styles.dotsContainer}>
-                  {STEPS.map((_, i) => (
-                     <View key={i} style={[styles.dot, { backgroundColor: textColor, opacity: i === stepIndex ? 1 : 0.2 }]} />
-                  ))}
-               </View>
+              <View style={styles.dotsContainer}>
+                {STEPS.map((_, i) => (
+                  <View key={i} style={[styles.dot, { backgroundColor: textColor, opacity: i === stepIndex ? 1 : 0.2 }]} />
+                ))}
+              </View>
             </View>
           </SafeAreaView>
         </TouchableOpacity>
       </Animated.View>
 
       {/* LAYER 4: COMPLETE SCREEN (Translated) */}
-      <Animated.View 
+      <Animated.View
         style={[styles.absoluteFill, { opacity: completeOpacity }]}
         pointerEvents={status === 'COMPLETE' ? 'auto' : 'none'}
       >
@@ -189,14 +188,14 @@ export default function HomeScreen() {
             <IconSymbol name="checkmark.circle.fill" size={80} color={tintColor} />
           </View>
 
-          <ThemedText type="title" style={{marginTop: 20}}>{i18n.t('grounding.wellDone')}</ThemedText>
+          <ThemedText type="title" style={{ marginTop: 20 }}>{t('grounding.wellDone')}</ThemedText>
           <GlassView style={styles.glassCard}>
             <ThemedText style={styles.description}>
-              {i18n.t('grounding.finishDescription')}
+              {t('grounding.finishDescription')}
             </ThemedText>
           </GlassView>
           <TouchableOpacity style={[styles.button, { backgroundColor: tintColor }]} onPress={() => setStatus('IDLE')}>
-            <ThemedText style={[styles.buttonText, { color: textColor }]}>{i18n.t('grounding.finishButton')}</ThemedText>
+            <ThemedText style={[styles.buttonText, { color: textColor }]}>{t('grounding.finishButton')}</ThemedText>
           </TouchableOpacity>
         </SafeAreaView>
       </Animated.View>

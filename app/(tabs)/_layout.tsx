@@ -11,9 +11,8 @@ import Animated, {
 
 import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
-import { i18n } from '@/constants/Translations'; // Import i18n
-import { usePreferences } from '@/context/PreferencesContext'; // Import Context
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/use-translation';
 
 const TAB_ICONS: Record<string, IconSymbolName> = {
   index: 'house.fill',
@@ -31,14 +30,14 @@ function CrossFadeBlur({ isDark, intensity = 80 }: { isDark: boolean; intensity?
         { tint: 'light', opacity: lightOpacity },
         { tint: 'dark', opacity: darkOpacity },
       ].map((layer) => (
-        <Animated.View 
-          key={layer.tint} 
+        <Animated.View
+          key={layer.tint}
           style={[StyleSheet.absoluteFill, { opacity: layer.opacity }]}
         >
-          <BlurView 
-            intensity={intensity} 
-            tint={layer.tint as BlurViewProps['tint']} 
-            style={StyleSheet.absoluteFill} 
+          <BlurView
+            intensity={intensity}
+            tint={layer.tint as BlurViewProps['tint']}
+            style={StyleSheet.absoluteFill}
           />
         </Animated.View>
       ))}
@@ -67,7 +66,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = Colors[colorScheme ?? 'light'];
-  
+
   const borderColor = theme.glassBorder;
   const bubbleColor = theme.tabHighlight;
 
@@ -78,12 +77,12 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.glassPill}>
-        
+
         <CrossFadeBlur isDark={isDark} />
 
         {/* BORDER LAYER */}
         <Animated.View style={[
-          StyleSheet.absoluteFill, 
+          StyleSheet.absoluteFill,
           { borderWidth: 1.5, borderRadius: 35 },
           animatedPillStyle
         ]} />
@@ -92,14 +91,14 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           {state.routes.map((route, index) => {
             const isFocused = state.index === index;
             const iconName = TAB_ICONS[route.name] || 'questionmark';
-            
+
             const onPress = () => {
               const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
               if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
             };
 
             return (
-              <TabItem 
+              <TabItem
                 key={route.key}
                 onPress={onPress}
                 isFocused={isFocused}
@@ -116,25 +115,23 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   );
 }
 
+
+
 export default function TabLayout() {
-  const { language } = usePreferences();
+  const { t } = useTranslation();
 
   return (
     <Tabs
-      // KEY FIX: This forces the entire Tab Navigator to unmount/remount when language changes.
-      // This ensures all Titles and Tab Bar Labels are regenerated with the new language immediately.
-      key={language} 
-      
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen 
-        name="index" 
-        options={{ title: i18n.t('grounding.title') }} 
+      <Tabs.Screen
+        name="index"
+        options={{ title: t('grounding.title') }}
       />
-      <Tabs.Screen 
-        name="settings" 
-        options={{ title: i18n.t('settings.title') }} 
+      <Tabs.Screen
+        name="settings"
+        options={{ title: t('settings.title') }}
       />
     </Tabs>
   );

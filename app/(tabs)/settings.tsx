@@ -6,13 +6,15 @@ import { GlassView } from '@/components/GlassView';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { i18n, SUPPORTED_LANGUAGES } from '@/constants/Translations';
+import { SUPPORTED_LANGUAGES } from '@/constants/Translations';
 import { usePreferences } from '@/context/PreferencesContext';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function SettingsScreen() {
   const { themePreference, setThemePreference, language, setLanguage } = usePreferences();
-  
+  const { t } = useTranslation();
+
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const iconColor = useThemeColor({}, 'icon');
@@ -21,31 +23,31 @@ export default function SettingsScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
-          
-          <ThemedText type="title" style={styles.header}>{i18n.t('settings.title')}</ThemedText>
+
+          <ThemedText type="title" style={styles.header}>{t('settings.title')}</ThemedText>
 
           {/* --- APPEARANCE SECTION --- */}
-          <ThemedText type="subtitle" style={styles.sectionTitle}>{i18n.t('settings.appearance')}</ThemedText>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>{t('settings.appearance')}</ThemedText>
           <GlassView style={styles.section}>
-            
-            <SettingItem 
-              label={i18n.t('settings.theme.system')} 
+
+            <SettingItem
+              label={t('settings.theme.system')}
               icon="iphone"
               isSelected={themePreference === 'system'}
               onPress={() => setThemePreference('system')}
               tintColor={tintColor}
               textColor={textColor}
             />
-            <SettingItem 
-              label={i18n.t('settings.theme.light')} 
+            <SettingItem
+              label={t('settings.theme.light')}
               icon="sun.max.fill"
               isSelected={themePreference === 'light'}
               onPress={() => setThemePreference('light')}
               tintColor={tintColor}
               textColor={textColor}
             />
-            <SettingItem 
-              label={i18n.t('settings.theme.dark')} 
+            <SettingItem
+              label={t('settings.theme.dark')}
               icon="moon.fill"
               isSelected={themePreference === 'dark'}
               onPress={() => setThemePreference('dark')}
@@ -56,12 +58,12 @@ export default function SettingsScreen() {
           </GlassView>
 
           {/* --- LANGUAGE SECTION --- */}
-          <ThemedText type="subtitle" style={styles.sectionTitle}>{i18n.t('settings.language')}</ThemedText>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>{t('settings.language')}</ThemedText>
           <GlassView style={styles.section}>
             {SUPPORTED_LANGUAGES.map((lang, index) => (
-              <SettingItem 
+              <SettingItem
                 key={lang.code}
-                label={lang.label} 
+                label={lang.label}
                 icon="globe" // generic icon for now
                 isSelected={language === lang.code}
                 onPress={() => setLanguage(lang.code)}
