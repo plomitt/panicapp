@@ -46,9 +46,14 @@ function CrossFadeBlur({ isDark, intensity = 80 }: { isDark: boolean; intensity?
 }
 
 function TabItem({ onPress, isFocused, iconName, activeColor, inactiveColor, bubbleColor }: any) {
+  const progress = useDerivedValue(() => {
+    return withTiming(isFocused ? 1 : 0, { duration: 300 });
+  }, [isFocused]);
+
   const animatedBubbleStyle = useAnimatedStyle(() => ({
-    backgroundColor: withTiming(isFocused ? bubbleColor : 'transparent', { duration: 300 })
-  }));
+    opacity: progress.value,
+    backgroundColor: bubbleColor
+  }), [bubbleColor]);
 
   return (
     <Pressable onPress={onPress} style={styles.tabItem}>
@@ -72,7 +77,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   const animatedPillStyle = useAnimatedStyle(() => ({
     borderColor: withTiming(borderColor, { duration: 300 })
-  }));
+  }), [borderColor]);
 
   return (
     <View style={styles.tabBarContainer}>
