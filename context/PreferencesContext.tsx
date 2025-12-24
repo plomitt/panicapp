@@ -10,7 +10,7 @@ interface PreferencesContextType {
   setThemePreference: (theme: ThemePreference) => void;
   language: LanguageCode;
   setLanguage: (lang: LanguageCode) => void;
-  activeColorScheme: 'light' | 'dark'; // The actual resulting color scheme
+  activeColorScheme: 'light' | 'dark'; 
 }
 
 const PreferencesContext = createContext<PreferencesContextType>({
@@ -27,7 +27,6 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   const [language, setLanguageState] = useState<LanguageCode>('en');
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load saved settings on startup
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -40,7 +39,6 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
             setLanguageState(savedLang as LanguageCode);
             i18n.locale = savedLang; 
         } else {
-            // Default to whatever i18n detected from system
             setLanguageState(i18n.locale as LanguageCode);
         }
       } catch (e) {
@@ -52,11 +50,13 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     loadSettings();
   }, []);
 
-  // Save settings when they change
-  const setLanguage = async (lang: LanguageCode) => {
+  const setLanguage = (lang: LanguageCode) => {
+    // 1. Update i18n immediately
+    i18n.locale = lang;
+    // 2. Trigger re-render via State
     setLanguageState(lang);
-    i18n.locale = lang; // Update i18n instance immediately
-    await AsyncStorage.setItem('language', lang);
+    // 3. Persist
+    AsyncStorage.setItem('language', lang);
   };
 
   const saveThemePreference = async (theme: ThemePreference) => {
@@ -64,7 +64,6 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     await AsyncStorage.setItem('themePreference', theme);
   };
 
-  // Calculate actual theme
   const activeColorScheme = 
     themePreference === 'system' 
       ? (systemColorScheme ?? 'light') 

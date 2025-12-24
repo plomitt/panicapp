@@ -36,17 +36,15 @@ interface RippleItem {
 }
 
 export default function HomeScreen() {
-  // 2. Consume Context to trigger re-render on language change
   const { language } = usePreferences();
 
-  // 3. Generate STEPS dynamically based on current language
   const STEPS = useMemo(() => {
     return STEP_CONFIG.map((step) => ({
       ...step,
       sense: i18n.t(`grounding.steps.${step.key}.sense`),
       instruction: i18n.t(`grounding.steps.${step.key}.instruction`),
     }));
-  }, [language]); // Re-run when language changes
+  }, [language]);
 
   const [status, setStatus] = useState<'IDLE' | 'ACTIVE' | 'COMPLETE'>('IDLE');
   const [stepIndex, setStepIndex] = useState(0);

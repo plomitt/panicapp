@@ -1,5 +1,5 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { BlurView, BlurViewProps } from 'expo-blur'; // Added BlurViewProps
+import { BlurView, BlurViewProps } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -11,6 +11,8 @@ import Animated, {
 
 import { IconSymbol, IconSymbolName } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { i18n } from '@/constants/Translations'; // Import i18n
+import { usePreferences } from '@/context/PreferencesContext'; // Import Context
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const TAB_ICONS: Record<string, IconSymbolName> = {
@@ -115,13 +117,25 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 }
 
 export default function TabLayout() {
+  const { language } = usePreferences();
+
   return (
     <Tabs
+      // KEY FIX: This forces the entire Tab Navigator to unmount/remount when language changes.
+      // This ensures all Titles and Tab Bar Labels are regenerated with the new language immediately.
+      key={language} 
+      
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+      <Tabs.Screen 
+        name="index" 
+        options={{ title: i18n.t('grounding.title') }} 
+      />
+      <Tabs.Screen 
+        name="settings" 
+        options={{ title: i18n.t('settings.title') }} 
+      />
     </Tabs>
   );
 }
