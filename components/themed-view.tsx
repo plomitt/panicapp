@@ -15,7 +15,7 @@ export function ThemedView({ style, lightColor, darkColor, ...otherProps }: Them
     return {
       backgroundColor: withTiming(backgroundColor, { duration: 300 }),
     };
-  });
+  }, [backgroundColor]);
 
   return <Animated.View style={[{ backgroundColor }, style, animatedStyle]} {...otherProps} />;
 }

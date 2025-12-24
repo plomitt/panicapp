@@ -22,7 +22,7 @@ export function ThemedText({
     return {
       color: withTiming(color, { duration: 300 }),
     };
-  });
+  }, [color]);
 
   return (
     <Animated.Text

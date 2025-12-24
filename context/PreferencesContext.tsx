@@ -10,14 +10,14 @@ interface PreferencesContextType {
   setThemePreference: (theme: ThemePreference) => void;
   language: LanguageCode;
   setLanguage: (lang: LanguageCode) => void;
-  activeColorScheme: 'light' | 'dark'; 
+  activeColorScheme: 'light' | 'dark';
 }
 
 const PreferencesContext = createContext<PreferencesContextType>({
   themePreference: 'system',
-  setThemePreference: () => {},
+  setThemePreference: () => { },
   language: 'en',
-  setLanguage: () => {},
+  setLanguage: () => { },
   activeColorScheme: 'light',
 });
 
@@ -34,12 +34,12 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
         const savedLang = await AsyncStorage.getItem('language');
 
         if (savedTheme) setThemePreference(savedTheme as ThemePreference);
-        
+
         if (savedLang) {
-            setLanguageState(savedLang as LanguageCode);
-            i18n.locale = savedLang; 
+          setLanguageState(savedLang as LanguageCode);
+          i18n.locale = savedLang;
         } else {
-            setLanguageState(i18n.locale as LanguageCode);
+          setLanguageState(i18n.locale as LanguageCode);
         }
       } catch (e) {
         console.error('Failed to load settings', e);
@@ -64,12 +64,15 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     await AsyncStorage.setItem('themePreference', theme);
   };
 
-  const activeColorScheme = 
-    themePreference === 'system' 
-      ? (systemColorScheme ?? 'light') 
+  const activeColorScheme =
+    themePreference === 'system'
+      ? (systemColorScheme ?? 'light')
       : themePreference;
 
-  if (!isLoaded) return null;
+  // Prevent rendering until loaded to avoid FOUC and ensure theme/language are correct
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <PreferencesContext.Provider value={{
