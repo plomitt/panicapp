@@ -126,9 +126,9 @@ i18n.locale = getLocales()[0].languageCode ?? 'en';
 i18n.enableFallback = true;
 
 export type LanguageCode = keyof typeof translations;
-export const SUPPORTED_LANGUAGES: { code: LanguageCode; label: string }[] = [
-  { code: 'en', label: 'English' },
-  { code: 'ru', label: 'Русский' },
-  { code: 'es', label: 'Español' },
-  { code: 'zh', label: '中文' },
+export const SUPPORTED_LANGUAGES: { code: LanguageCode; label: string; symbol: string }[] = [
+  { code: 'en', label: 'English', symbol: 'En' },
+  { code: 'ru', label: 'Русский', symbol: 'Ру' },
+  { code: 'es', label: 'Español', symbol: 'Es' },
+  { code: 'zh', label: '中文', symbol: '文' },
 ];

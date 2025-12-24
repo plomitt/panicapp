@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GlassView } from '@/components/GlassView';
+import { LanguageIcon } from '@/components/LanguageIcon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -64,7 +65,8 @@ export default function SettingsScreen() {
               <SettingItem
                 key={lang.code}
                 label={lang.label}
-                icon="globe" // generic icon for now
+                symbol={lang.symbol}
+                icon="globe"
                 isSelected={language === lang.code}
                 onPress={() => setLanguage(lang.code)}
                 tintColor={tintColor}
@@ -81,12 +83,16 @@ export default function SettingsScreen() {
 }
 
 // Helper Component for List Items
-function SettingItem({ label, icon, isSelected, onPress, tintColor, textColor, isLast }: any) {
+function SettingItem({ label, icon, symbol, isSelected, onPress, tintColor, textColor, isLast }: any) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <View style={[styles.item, !isLast && styles.separator, { borderColor: 'rgba(150,150,150,0.1)' }]}>
         <View style={styles.itemLeft}>
-          <IconSymbol name={icon} size={24} color={isSelected ? tintColor : textColor} />
+          {symbol && symbol.trim().length > 0 ? (
+            <LanguageIcon symbol={symbol} color={isSelected ? tintColor : textColor} />
+          ) : (
+            <IconSymbol name={icon} size={24} color={isSelected ? tintColor : textColor} />
+          )}
           <ThemedText style={[styles.label, { fontWeight: isSelected ? '700' : '400' }]}>{label}</ThemedText>
         </View>
         {isSelected && <IconSymbol name="checkmark" size={20} color={tintColor} />}
