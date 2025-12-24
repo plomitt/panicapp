@@ -24,7 +24,7 @@ export const Colors = {
     step3: '#FF9100', // Vivid Orange
     step2: '#D500F9', // Vivid Purple
     step1: '#FF3D00', // Vivid Red
-    
+
     stepText: '#11181C', // High contrast for readability
 
     glassBorder: 'rgba(0, 0, 0, 0.1)',
@@ -40,22 +40,22 @@ export const Colors = {
 
     // GROUNDING COLORS (Dark Mode - Deep/Muted)
     // Goal: "Elevated" dark colors. Not neon, but rich.
-    
+
     // Step 5 (Sight): Deep Slate Blue
     step5: '#102A43',
-    
+
     // Step 4 (Touch): Deep Forest/Moss
-    step4: '#133322', 
-    
+    step4: '#133322',
+
     // Step 3 (Sound): Deep Plum/Indigo
-    step3: '#2D1B4E', 
-    
+    step3: '#2D1B4E',
+
     // Step 2 (Smell): Muted Mauve/Rosewood
-    step2: '#4A1C30', 
-    
+    step2: '#4A1C30',
+
     // Step 1 (Taste): Burnt Sienna/Clay
     step1: '#5D2E18',
-    
+
     stepText: '#ECEDEE', // Light text on dark backgrounds
 
     glassBorder: 'rgba(255, 255, 255, 0.15)',
