@@ -14,29 +14,30 @@ interface GlassViewProps {
 export function GlassView({ children, style, intensity = 30 }: GlassViewProps) {
   const theme = useColorScheme();
   const isDark = theme === 'dark';
-  
+
   const borderColor = useThemeColor({}, 'glassBorder');
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     return {
       borderColor: withTiming(borderColor, { duration: 300 }),
     };
-  });
+  }, [borderColor]);
 
   return (
     <View style={[styles.glassContainer, style]}>
-      <BlurView 
-        intensity={intensity} 
-        tint={isDark ? 'dark' : 'light'} 
-        style={StyleSheet.absoluteFill} 
-        pointerEvents="none" 
-      />
-      
-      <Animated.View 
-        style={[styles.borderLayer, animatedBorderStyle]} 
+      <BlurView
+        key={isDark ? 'dark' : 'light'} // Force remount on theme change to fix Safari rendering bugs
+        intensity={intensity}
+        tint={isDark ? 'dark' : 'light'}
+        style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
-      
+
+      <Animated.View
+        style={[styles.borderLayer, animatedBorderStyle]}
+        pointerEvents="none"
+      />
+
       {children}
     </View>
   );
